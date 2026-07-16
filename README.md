@@ -1,4 +1,3 @@
-
 # AWS Infrastructure as Code (IaC) with CloudFormation
 
 ![AWS](https://img.shields.io/badge/AWS-%23FF9900.svg?style=for-the-badge&logo=amazon-aws&logoColor=white)
@@ -42,31 +41,48 @@ Resources:
       Tags:
         - Key: Name
           Value: zubair-iac-subnet
-!Ref MyCustomVPC: An intrinsic function used to dynamically retrieve the ID of the newly created VPC and attach the Subnet to it during the build process.
-Phase 2: Deploying the Stack
-code
-Bash
+```
+* **`!Ref MyCustomVPC`**: An intrinsic function used to dynamically retrieve the ID of the newly created VPC and attach the Subnet to it during the build process.
+
+---
+
+## Phase 2: Deploying the Stack
+
+```bash
 aws cloudformation create-stack --stack-name zubair-network-stack --template-body file://infrastructure.yaml
-create-stack: Instructs the CloudFormation engine to read the local YAML file and provision the resources in the correct dependency order.
-Phase 3: Verification
-code
-Bash
+```
+* **`create-stack`**: Instructs the CloudFormation engine to read the local YAML file and provision the resources in the correct dependency order.
+
+---
+
+## Phase 3: Verification
+
+```bash
 aws cloudformation describe-stacks --stack-name zubair-network-stack --query "Stacks[0].StackStatus" --output text
 # Output: CREATE_COMPLETE
 
 aws ec2 describe-vpcs --filters "Name=tag:Name,Values=zubair-iac-vpc" --query "Vpcs[0].VpcId" --output text
 # Output: vpc-07236e15d2b4592e1
-Validated that the CloudFormation stack completed successfully and that the EC2 service registered the new VPC.
-![alt text](iac1.PNG)
-Phase 4: Infrastructure Teardown
+```
+* Validated that the CloudFormation stack completed successfully and that the EC2 service registered the new VPC.
+
+![Terminal Execution - Provisioning](iac1.PNG)
+
+---
+
+## Phase 4: Infrastructure Teardown
+
 One of the primary benefits of CloudFormation is state management. Because AWS tracks the dependencies, the entire architecture can be destroyed with a single command, without needing to manually detach or delete sub-resources in a specific order.
-code
-Bash
+
+```bash
 aws cloudformation delete-stack --stack-name zubair-network-stack
-delete-stack: Automatically resolves dependencies (e.g., deleting the Subnet before the VPC) and cleanly removes all resources defined in the stack.
-code
-Bash
+```
+* **`delete-stack`**: Automatically resolves dependencies (e.g., deleting the Subnet before the VPC) and cleanly removes all resources defined in the stack.
+
+```bash
 aws ec2 describe-vpcs --filters "Name=tag:Name,Values=zubair-iac-vpc" --query "Vpcs[0].VpcId" --output text
 # Output: None
-Verified that the VPC was successfully destroyed and no orphaned resources were left behind.
-![alt text](iac2.PNG
+```
+* Verified that the VPC was successfully destroyed and no orphaned resources were left behind.
+
+![Terminal Execution - Teardown](iac2.PNG)
